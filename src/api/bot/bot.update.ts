@@ -1,27 +1,24 @@
 import { Hears, InjectBot, Message, On, Start, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
-import { actionButtons } from './bot.buttons';
-import { PrismaService } from 'src/database/prisma.service';
+import { BotService } from './bot.service';
+import { LinkService } from 'src/api/link/link.service';
 
 @Update()
 export class BotUpdate {
   constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
-    private readonly prisma: PrismaService,
+    private readonly botService: BotService,
+    private readonly linkService: LinkService,
   ) {}
 
   @Start()
   async start(ctx: Context) {
-    await ctx.reply(`Привет, ${ctx.from?.first_name}! ✋`);
-    await ctx.reply(
-      'Добро пожаловать в бота для работы со ссылками.\nЧто вы хотите сделать?',
-      actionButtons(),
-    );
+    return await this.botService.start(ctx);
   }
 
   @Hears(process.env.BUTTON_GET_ALL)
   async getAll(ctx: Context) {
-    const links = await this.prisma.link.findMany();
+    const links = await this.linkService.findAll();
     await ctx.reply(
       `Список сохраненных ссылок:${links.map((link) => `\n🔗${link.id}: ${link.value}`).join('')}`,
     );
