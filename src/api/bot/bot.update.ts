@@ -1,33 +1,51 @@
-import { Hears, InjectBot, Message, On, Start, Update } from 'nestjs-telegraf';
-import { Context, Telegraf } from 'telegraf';
+import { Ctx, Hears, Message, On, Start, Update } from 'nestjs-telegraf';
 import { BotService } from './bot.service';
-import { LinkService } from 'src/api/link/link.service';
+import { Context } from './interface/context.interface';
 
 @Update()
 export class BotUpdate {
-  constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
-    private readonly botService: BotService,
-    private readonly linkService: LinkService,
-  ) {}
+  constructor(private readonly botService: BotService) {}
 
   @Start()
   async start(ctx: Context) {
     return await this.botService.start(ctx);
   }
 
+  @Hears(process.env.BUTTON_SAVE)
+  async save(ctx: Context) {
+    await ctx.reply(`Напишите ссылку:`);
+    ctx.session = { type: 'save' };
+  }
+
   @Hears(process.env.BUTTON_GET_ALL)
   async getAll(ctx: Context) {
-    const links = await this.linkService.findAll();
-    await ctx.reply(
-      `Список сохраненных ссылок:${links.map((link) => `\n🔗${link.id}: ${link.value}`).join('')}`,
-    );
+    ctx.session = { type: 'getAll' };
+    return await this.botService.findAll(ctx);
   }
 
   @Hears(process.env.BUTTON_GET_ONE)
   async getOne(ctx: Context) {
-    await ctx.reply(`Напишите номер ссылки:`);
+    await ctx.reply(`Напишите код ссылки:`);
+    ctx.session = { type: 'get' };
   }
 
-  @On('text') async getOneLink(@Message('text') id: string, ctx: Context) {}
+  @Hears(process.env.BUTTON_DELETE)
+  async delete(ctx: Context) {
+    await ctx.reply(`Напишите код ссылки:`);
+    ctx.session = { type: 'delete' };
+  }
+
+  @On('text') async getMessage(
+    @Message('text') value: string,
+    @Ctx() ctx: Context,
+  ) {
+    switch (ctx.session.type) {
+      case 'save':
+        return await this.botService.createLink(value, ctx);
+      case 'get':
+        return await this.botService.findOne(value, ctx);
+      case 'delete':
+        return await this.botService.delete(value, ctx);
+    }
+  }
 }
