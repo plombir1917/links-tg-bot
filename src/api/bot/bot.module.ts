@@ -6,15 +6,13 @@ import { BotUpdate } from './bot.update';
 import { LinkModule } from 'src/api/link/link.module';
 import { BotService } from './bot.service';
 
-// const session = new LocalSession({
-//   database: 'sessions.json',
-// });
+const session = new LocalSession();
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TelegrafModule.forRoot({
-      // middlewares: [session.middleware()],
+      middlewares: [session.middleware()],
       token: process.env.BOT_TOKEN,
     }),
     LinkModule,
