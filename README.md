@@ -23,7 +23,7 @@ $ npm run start:prod
 
 ## About
 
-Deployed on "Render" free-instance, may take a few minites before first answer [read more here](https://docs.render.com/free).
+Deployed on "Railway" free-instance [read more here](https://railway.app).
 
 ## Stay in touch
 
