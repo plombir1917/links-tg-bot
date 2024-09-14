@@ -20,4 +20,17 @@ export class LinkService {
   async delete(id: string) {
     await this.prisma.link.delete({ where: { id } });
   }
+
+  isValidUrl(url: string) {
+    const urlPattern = new RegExp(
+      '^(https?:\\/\\/)?' + // protocol
+        '((([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-zA-Z\\d%@_.~+&:]*)*' + // port and path
+        '(\\?[;&a-zA-Z\\d%@_.,~+&:=-]*)?' + // query string
+        '(\\#[-a-zA-Z\\d_]*)?$',
+      'i', // fragment locator
+    );
+    if (!urlPattern.test(url)) throw new Error('Значение не является ссылкой.');
+  }
 }
