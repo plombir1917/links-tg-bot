@@ -17,17 +17,19 @@ export class BotService {
 
   async createLink(url: string, ctx: Context) {
     try {
+      this.linkService.isValidUrl(url);
       const link = await this.linkService.create(url);
       await ctx.reply(`Ссылка создана, ей присвоен код:\n${link.id}`);
     } catch (error) {
-      await ctx.reply('Ссылка не создана.');
+      await ctx.reply(error.message);
     }
   }
 
   async findAll(ctx: Context) {
     const links = await this.linkService.findAll();
     await ctx.reply(
-      `Список сохраненных ссылок:${links.map((link) => `\n🔗${link.id}: ${link.value}`).join('')}`,
+      `Список сохраненных ссылок: Код | URL\n${links.map((link) => `\n🔗${link.id}: ${link.value}`).join('')}`,
+      { link_preview_options: { is_disabled: true } },
     );
   }
 
